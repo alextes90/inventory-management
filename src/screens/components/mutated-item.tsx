@@ -1,16 +1,17 @@
-import { InventoryItem } from "@/models";
-import { useEffect, useState } from "react";
+import { DEFAULT_PRODUCT_NAME } from "@/constans";
 
 type Props = {
   changeItemName: string;
   changeItemQuant: number;
   setChangeItemQuant: React.Dispatch<React.SetStateAction<number>>;
+  setRequestUpdate: (bool: boolean) => void;
 };
 
 export const MutatedItem = ({
   changeItemName,
   changeItemQuant,
   setChangeItemQuant,
+  setRequestUpdate,
 }: Props) => {
   return (
     <div className='flex w-[500px] justify-between py-[30px] items-center'>
@@ -29,21 +30,30 @@ export const MutatedItem = ({
       <div>
         <div className='py-[2px] flex w-[100px] justify-around'>
           <button
-            className='text-blue-800 text-[20px] font-bold cursor-pointer border-blue-400 border-solid border-2 px-[10px]'
+            className={`text-blue-800 text-[20px] font-bold cursor-pointer border-blue-400 border-solid border-2 px-[10px] ${
+              changeItemName === DEFAULT_PRODUCT_NAME ? "disabled" : ""
+            }`}
             onClick={() => {
               setChangeItemQuant((prev: number) => prev + 1);
+              setRequestUpdate(false);
             }}
+            disabled={changeItemName === DEFAULT_PRODUCT_NAME}
           >
             +
           </button>
           <button
             className={`text-blue-800 text-[20px] font-bold cursor-pointer border-blue-400 border-solid border-2 px-[10px] ${
-              changeItemQuant <= 0 ? "disabled" : ""
+              changeItemQuant <= 0 || changeItemName === DEFAULT_PRODUCT_NAME
+                ? "disabled"
+                : ""
             }`}
             onClick={() => {
               setChangeItemQuant((prev: number) => prev - 1);
+              setRequestUpdate(false);
             }}
-            disabled={changeItemQuant <= 0}
+            disabled={
+              changeItemQuant <= 0 || changeItemName === DEFAULT_PRODUCT_NAME
+            }
           >
             -
           </button>
