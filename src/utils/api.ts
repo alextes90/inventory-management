@@ -1,6 +1,5 @@
 import {
   BASE_URL,
-  GET_ALL_PRODUCT_PATH,
   INVENTORY_PATH,
   PRODUCT_PATH,
   RESET_INVENTIRY_PATH,
@@ -23,12 +22,11 @@ export const getIventoryList = async () => {
 
 export const getAllProducts = async () => {
   try {
-    const response = await fetch(`${BASE_URL}/${GET_ALL_PRODUCT_PATH}`);
+    const response = await fetch("/api/inventory");
     if (response.status !== 200) {
       throw new Error("failed to fetch");
     }
     const data = await response.json();
-
     return data;
   } catch (err) {
     console.error(err);

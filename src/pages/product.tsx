@@ -1,7 +1,7 @@
 import { Loading } from "@/components/loading";
 import { Navigation } from "@/components/navigation";
-import { createProduct, getAllProducts } from "@/utils/api";
-import { FormEvent, useEffect, useState } from "react";
+import { createProduct } from "@/utils/api";
+import { FormEvent, useState } from "react";
 
 const PRODUCT_NAME = "product name";
 const SUCCESS_RESPONSE = "Product name successfully added";

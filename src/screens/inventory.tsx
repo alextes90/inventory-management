@@ -54,9 +54,7 @@ export const InventoryScreen = () => {
       setRequestUpdate(true);
       return;
     }
-
     let updateInventoryList: InventoryItem[];
-
     if (changeItemQuant === 0) {
       updateInventoryList = curInventoryWithoutUpdatedItem;
     } else {
