@@ -9,3 +9,11 @@
 .disabled {
   background-color: darkgray;
 }
+
+.success {
+  color: green;
+}
+
+.error {
+  color: red;
+}
