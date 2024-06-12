@@ -1,4 +1,10 @@
-import { BASE_URL, GET_ALL_PRODUCT_PATH, INVENTORY_PATH } from "@/constans";
+import {
+  BASE_URL,
+  GET_ALL_PRODUCT_PATH,
+  INVENTORY_PATH,
+  PRODUCT_PATH,
+  RESET_INVENTIRY_PATH,
+} from "@/constans";
 import { InventoryItem } from "@/models";
 
 export const getIventoryList = async () => {
@@ -31,7 +37,6 @@ export const getAllProducts = async () => {
 
 export const updateInventory = async (body: InventoryItem[]) => {
   try {
-    console.log(body);
     const response = await fetch(`${BASE_URL}/${INVENTORY_PATH}`, {
       method: "POST",
       headers: {
@@ -47,5 +52,47 @@ export const updateInventory = async (body: InventoryItem[]) => {
     return data;
   } catch (err) {
     console.error(err);
+  }
+};
+
+export const resetInventory = async () => {
+  try {
+    const response = await fetch(`${BASE_URL}/${RESET_INVENTIRY_PATH}`, {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json",
+      },
+    });
+    if (response.status !== 200) {
+      throw new Error("error occurred while updating");
+    }
+    const data = await response.json();
+
+    return data;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+export const createProduct = async (name: FormDataEntryValue) => {
+  try {
+    const response = await fetch(`${BASE_URL}/${PRODUCT_PATH}`, {
+      method: "PUT",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify({
+        name,
+      }),
+    });
+    if (response.status !== 200) {
+      const errorMessage = await response.json();
+      throw new Error(errorMessage.error);
+    }
+    const data = await response.json();
+
+    return data;
+  } catch (err) {
+    throw err;
   }
 };
