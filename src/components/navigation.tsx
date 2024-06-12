@@ -16,7 +16,7 @@ export const Navigation = () => {
         href={PRODUCT_PAGE}
         className={pathname === PRODUCT_PAGE ? "isActive" : ""}
       >
-        Product
+        Create New Product
       </Link>
     </nav>
   );
