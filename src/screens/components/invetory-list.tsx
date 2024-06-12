@@ -4,11 +4,13 @@ type Props = {
   inventoryItemList: InventoryItem[];
   setChangeItemName: (item: string) => void;
   setChangeItemQuant: (item: number) => void;
+  setRequestUpdate: (bool: boolean) => void;
 };
 export const InventoryList = ({
   inventoryItemList,
   setChangeItemName,
   setChangeItemQuant,
+  setRequestUpdate,
 }: Props) => {
   return (
     <>
@@ -23,6 +25,7 @@ export const InventoryList = ({
           onClick={() => {
             setChangeItemName(el.name);
             setChangeItemQuant(el.quantity);
+            setRequestUpdate(false);
           }}
         >
           <p>{el.name}</p>
