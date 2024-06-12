@@ -1,36 +1,43 @@
 import { InventoryItem, Product } from "@/models";
-import { getAllProducts, getIventoryList, updateInventory } from "@/utils/api";
+import {
+  getAllProducts,
+  getIventoryList,
+  resetInventory,
+  updateInventory,
+} from "@/utils/api";
 import { useEffect, useState } from "react";
 import { InventoryList } from "./components/invetory-list";
 import { Navigation } from "@/components/navigation";
 import { MutatedItem } from "./components/mutated-item";
+import { dedublicateItems } from "@/utils/helpers";
+import { DEFAULT_PRODUCT_NAME } from "@/constans";
+import { Loading } from "@/components/loading";
 
 export const InventoryScreen = () => {
   const [oldInventoryList, setoldInventoryList] = useState<InventoryItem[]>([]);
   const [invetoryListValue, setInventoryListValue] = useState<InventoryItem[]>(
     []
   );
-  const [changeItemName, setChangeItemName] = useState("choose product");
+  const [productList, setProductList] = useState<Product[]>([]);
+  const [changeItemName, setChangeItemName] = useState(DEFAULT_PRODUCT_NAME);
   const [changeItemQuant, setChangeItemQuant] = useState(0);
+  const [requestUpdate, setRequestUpdate] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const getData = async () => {
+      setLoading(true);
       const [inventoryData, productData] = await Promise.all([
         getIventoryList(),
         getAllProducts(),
       ]);
-      const productDataToInventory: InventoryItem[] = (
-        productData as Product[]
-      ).map((el) => {
-        return { name: el.name, quantity: 0 };
-      });
-      //Filter get ALLProducts and add only if Inventory does not have suchName
-      //Forbid to update with quontity 0, or if quantity soes not change
-      // forbid to sase if name is chose product
-      // forbid to add quantity if choose product
-      //update on receiving data
+
+      const allItems = dedublicateItems(inventoryData, productData);
+
+      setProductList(productData);
       setoldInventoryList(inventoryData);
-      setInventoryListValue([...inventoryData, ...productDataToInventory]);
+      setInventoryListValue(allItems);
+      setLoading(false);
     };
     getData();
   }, []);
@@ -39,12 +46,48 @@ export const InventoryScreen = () => {
     const curInventoryWithoutUpdatedItem = oldInventoryList.filter(
       (el) => el.name !== changeItemName
     );
-    const updateInventoryList = [
-      ...curInventoryWithoutUpdatedItem,
-      { name: changeItemName, quantity: changeItemQuant },
-    ];
-    const response = await updateInventory(updateInventoryList);
-    console.log(response);
+    const oldQuantity = oldInventoryList.find(
+      (el) => el.name === changeItemName
+    )?.quantity;
+
+    if ((oldQuantity || 0) === changeItemQuant) {
+      setRequestUpdate(true);
+      return;
+    }
+
+    let updateInventoryList: InventoryItem[];
+
+    if (changeItemQuant === 0) {
+      updateInventoryList = curInventoryWithoutUpdatedItem;
+    } else {
+      updateInventoryList = [
+        ...curInventoryWithoutUpdatedItem,
+        { name: changeItemName, quantity: changeItemQuant },
+      ];
+    }
+    setLoading(true);
+    const response: InventoryItem[] = await updateInventory(
+      updateInventoryList
+    );
+    const allItems = dedublicateItems(response, productList);
+    setoldInventoryList(response);
+    setInventoryListValue(allItems);
+    setChangeItemName(DEFAULT_PRODUCT_NAME);
+    setChangeItemQuant(0);
+    setRequestUpdate(false);
+    setLoading(false);
+  };
+
+  const resetInventoryHandler = async () => {
+    setLoading(true);
+    const response: [] = await resetInventory();
+    const allItems = dedublicateItems(response, productList);
+    setoldInventoryList(response);
+    setInventoryListValue(allItems);
+    setChangeItemName(DEFAULT_PRODUCT_NAME);
+    setChangeItemQuant(0);
+    setRequestUpdate(false);
+    setLoading(false);
   };
 
   return (
@@ -52,22 +95,39 @@ export const InventoryScreen = () => {
       <header>
         <Navigation />
       </header>
-      <main>
+      <main className='relative'>
         <div className='w-fit m-auto'>
           <MutatedItem
             changeItemName={changeItemName}
             changeItemQuant={changeItemQuant}
             setChangeItemQuant={setChangeItemQuant}
+            setRequestUpdate={setRequestUpdate}
           />
-          <div className='flex justify-end py-[10px] w-[500px]'>
+          <div className='flex justify-between py-[10px] w-[500px]'>
             <button
-              className='tetx-center cursor-pointer border-blue-400 border-solid border-2 px-[10px]'
+              className='tetx-center cursor-pointer border-blue-400 border-solid border-2 px-[15px]'
               onClick={() => {
-                updateInventoryHandler();
+                resetInventoryHandler();
               }}
             >
-              Save
+              Reset inventory
             </button>
+            <div className='relative'>
+              <p className='absolute -top-5 text-[8px] text-red-700'>
+                {requestUpdate && "change quantity"}
+              </p>
+              <button
+                className={`tetx-center cursor-pointer border-blue-400 border-solid border-2 px-[15px] ${
+                  changeItemName === DEFAULT_PRODUCT_NAME ? "disabled" : ""
+                }`}
+                onClick={() => {
+                  updateInventoryHandler();
+                }}
+                disabled={changeItemName === DEFAULT_PRODUCT_NAME}
+              >
+                Save
+              </button>
+            </div>
           </div>
         </div>
         <div className='border-8 border-indigo-600 w-fit m-auto p-[20px]'>
@@ -75,8 +135,10 @@ export const InventoryScreen = () => {
             setChangeItemName={setChangeItemName}
             setChangeItemQuant={setChangeItemQuant}
             inventoryItemList={invetoryListValue}
+            setRequestUpdate={setRequestUpdate}
           />
         </div>
+        {loading && <Loading />}
       </main>
     </>
   );
