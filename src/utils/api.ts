@@ -1,5 +1,6 @@
 import {
   BASE_URL,
+  GET_ALL_PRODUCT_PATH,
   INVENTORY_PATH,
   PRODUCT_PATH,
   RESET_INVENTIRY_PATH,
@@ -8,7 +9,7 @@ import { InventoryItem } from "@/models";
 
 export const getIventoryList = async () => {
   try {
-    const response = await fetch(`${BASE_URL}/${INVENTORY_PATH}`);
+    const response = await fetch(`${process.env.BASE_URL}/${INVENTORY_PATH}`);
     if (response.status !== 200) {
       throw new Error("failed to fetch");
     }
@@ -23,6 +24,21 @@ export const getIventoryList = async () => {
 export const getAllProducts = async () => {
   try {
     const response = await fetch("/api/inventory");
+    if (response.status !== 200) {
+      throw new Error("failed to fetch");
+    }
+    const data = await response.json();
+    return data;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+export const getAllProductsGSSP = async () => {
+  try {
+    const response = await fetch(
+      `${process.env.BASE_URL}/${GET_ALL_PRODUCT_PATH}`
+    );
     if (response.status !== 200) {
       throw new Error("failed to fetch");
     }
