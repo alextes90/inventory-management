@@ -1,11 +1,6 @@
 import { InventoryItem, Product } from "@/models";
-import {
-  getAllProducts,
-  getIventoryList,
-  resetInventory,
-  updateInventory,
-} from "@/utils/api";
-import { useEffect, useState } from "react";
+import { resetInventory, updateInventory } from "@/utils/api";
+import { useState } from "react";
 import { InventoryList } from "./components/invetory-list";
 import { Navigation } from "@/components/navigation";
 import { MutatedItem } from "./components/mutated-item";
@@ -13,36 +8,29 @@ import { dedublicateItems } from "@/utils/helpers";
 import { DEFAULT_PRODUCT_NAME } from "@/constans";
 import { Loading } from "@/components/loading";
 
-export const InventoryScreen = () => {
-  const [oldInventoryList, setoldInventoryList] = useState<InventoryItem[]>([]);
-  const [invetoryListValue, setInventoryListValue] = useState<InventoryItem[]>(
-    []
-  );
-  const [productList, setProductList] = useState<Product[]>([]);
+type Props = {
+  repo: Repo;
+};
+
+type Repo = {
+  inventoryData: InventoryItem[];
+  productData: Product[];
+  allItems: InventoryItem[];
+};
+
+export const InventoryScreen = ({ repo }: Props) => {
+  const { productData: productList, inventoryData, allItems } = repo;
+  const [oldInventoryList, setoldInventoryList] =
+    useState<InventoryItem[]>(inventoryData);
+  const [invetoryListValue, setInventoryListValue] =
+    useState<InventoryItem[]>(allItems);
   const [changeItemName, setChangeItemName] = useState(DEFAULT_PRODUCT_NAME);
   const [changeItemQuant, setChangeItemQuant] = useState(0);
   const [requestUpdate, setRequestUpdate] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const getData = async () => {
-      setLoading(true);
-      const [inventoryData, productData] = await Promise.all([
-        getIventoryList(),
-        getAllProducts(),
-      ]);
-
-      const allItems = dedublicateItems(inventoryData, productData);
-
-      setProductList(productData);
-      setoldInventoryList(inventoryData);
-      setInventoryListValue(allItems);
-      setLoading(false);
-    };
-    getData();
-  }, []);
-
   const updateInventoryHandler = async () => {
+    let updateInventoryList: InventoryItem[];
     const curInventoryWithoutUpdatedItem = oldInventoryList.filter(
       (el) => el.name !== changeItemName
     );
@@ -54,7 +42,6 @@ export const InventoryScreen = () => {
       setRequestUpdate(true);
       return;
     }
-    let updateInventoryList: InventoryItem[];
     if (changeItemQuant === 0) {
       updateInventoryList = curInventoryWithoutUpdatedItem;
     } else {
